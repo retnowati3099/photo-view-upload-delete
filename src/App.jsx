@@ -13,13 +13,11 @@ function App() {
     },
   });
   const [img, setImg] = useState(null);
-  const [tooltipPos, setTooltipPos] = useState({
-    x: 0,
-    y: 0,
-  });
-  const [showTooltip, setShowTooltip] = useState(false);
-
-  const fileInputRef = useRef(null);
+  // const [tooltipPos, setTooltipPos] = useState({
+  //   x: 0,
+  //   y: 0,
+  // });
+  // const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
     document.title = "Halaman Upload Foto";
@@ -36,6 +34,15 @@ function App() {
     });
   };
 
+  const handleImageChange = (e) => {
+    const imgFile = e.target.files[0];
+    const reader = new FileReader();
+    reader.readAsDataURL(imgFile);
+    reader.onloadend = () => {
+      setImg(reader.result);
+    };
+  };
+
   useEffect(() => {
     if (img) {
       const data = { img: img };
@@ -50,30 +57,20 @@ function App() {
     }
   }, [img]);
 
-  const handleImageChange = (e) => {
-    const imgFile = e.target.files[0];
-    const reader = new FileReader();
-    reader.readAsDataURL(imgFile);
-    reader.onloadend = () => {
-      setImg(reader.result);
-    };
-  };
+  // const handleMouseMove = (e) => {
+  //   setTooltipPos({
+  //     x: e.pageX,
+  //     y: e.pageY,
+  //   });
+  // };
 
-  const handleMouseMove = (e) => {
-    setTooltipPos({
-      x: e.pageX,
-      y: e.pageY,
-    });
-  };
+  // const handleMouseEnter = () => {
+  //   setShowTooltip(true);
+  // };
 
-  const handleMouseEnter = () => {
-    setShowTooltip(true);
-  };
-
-  const handleMouseLeave = () => {
-    setShowTooltip(false);
-  };
-
+  // const handleMouseLeave = () => {
+  //   setShowTooltip(false);
+  // };
 
   return (
     <div className="container">
@@ -109,12 +106,12 @@ function App() {
             </div>
             <input
               type="file"
-              //style={{ display: "none" }}
-              //ref={fileInputRef}
+              id="fileInput"
+              style={{ display: "none" }}
               onChange={handleImageChange}
             />
           </div>
-          {showTooltip && !showUploadImg.isVisible && (
+          {/* {showTooltip && !showUploadImg.isVisible && (
             <div
               className="position-absolute border border-dark bg-white p-1 text-center"
               style={{
@@ -125,7 +122,7 @@ function App() {
             >
               Photo Picker
             </div>
-          )}
+          )} */}
           {showUploadImg.isVisible && (
             <div
               className="position-absolute rounded p-3 bg-white shadow-sm user-select-none text-center"
@@ -134,7 +131,7 @@ function App() {
                 top: showUploadImg.position.y,
                 width: "140px",
               }}
-              // onClick={handleClick}
+              onClick={() => document.getElementById("fileInput").click()}
             >
               Upload Photo
             </div>
