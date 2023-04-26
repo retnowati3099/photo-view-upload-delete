@@ -1,7 +1,8 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import axios from "axios";
 
 function App() {
   const [showUploadImg, setShowUploadImg] = useState({
@@ -11,9 +12,21 @@ function App() {
       y: 0,
     },
   });
-  const [photo, setPhoto] = useState(null);
+  const [img, setImg] = useState(null);
+  const [tooltipPos, setTooltipPos] = useState({
+    x: 0,
+    y: 0,
+  });
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    document.title = "Halaman Upload Foto";
+  });
 
   const handleAreaClick = (e) => {
+    setShowTooltip(false);
     setShowUploadImg({
       isVisible: !showUploadImg.isVisible,
       position: {
@@ -23,17 +36,44 @@ function App() {
     });
   };
 
-  const fileInputRef = useRef(null);
-  const handleClick = () => {
-    fileInputRef.current.click();
+  useEffect(() => {
+    if (img) {
+      const data = { img: img };
+      axios
+        .post("http://localhost:8080/images", data)
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    }
+  }, [img]);
+
+  const handleImageChange = (e) => {
+    const imgFile = e.target.files[0];
+    const reader = new FileReader();
+    reader.readAsDataURL(imgFile);
+    reader.onloadend = () => {
+      setImg(reader.result);
+    };
   };
 
-  const handleFileInputChange = (e) => {
-    const file = e.target.files[0];
-    //console.log("Selected file:", file);
-    setPhoto(file);
-    console.log(photo);
+  const handleMouseMove = (e) => {
+    setTooltipPos({
+      x: e.pageX,
+      y: e.pageY,
+    });
   };
+
+  const handleMouseEnter = () => {
+    setShowTooltip(true);
+  };
+
+  const handleMouseLeave = () => {
+    setShowTooltip(false);
+  };
+
 
   return (
     <div className="container">
@@ -43,10 +83,14 @@ function App() {
             style={{
               width: "200px",
               height: "200px",
+              borderRadius: "50%",
               cursor: "pointer",
             }}
             className="position-relative"
             onClick={handleAreaClick}
+            onMouseOver={handleMouseEnter}
+            onMouseOut={handleMouseLeave}
+            onMouseMove={handleMouseMove}
           >
             <img
               src="src/assets/IMG_20180426_160424_490.jpg"
@@ -63,27 +107,38 @@ function App() {
                 ADD PROFILE PHOTO
               </p>
             </div>
-            {showUploadImg.isVisible && (
-              <>
-                <div
-                  className="position-absolute rounded p-3 bg-white w-100 shadow-sm user-select-none"
-                  style={{
-                    left: showUploadImg.position.x - 80,
-                    top: showUploadImg.position.y + 10,
-                  }}
-                  onClick={handleClick}
-                >
-                  Upload Photo
-                </div>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  style={{ display: "none" }}
-                  onChange={handleFileInputChange}
-                />
-              </>
-            )}
+            <input
+              type="file"
+              //style={{ display: "none" }}
+              //ref={fileInputRef}
+              onChange={handleImageChange}
+            />
           </div>
+          {showTooltip && !showUploadImg.isVisible && (
+            <div
+              className="position-absolute border border-dark bg-white p-1 text-center"
+              style={{
+                left: tooltipPos.x,
+                top: tooltipPos.y,
+                width: "110px",
+              }}
+            >
+              Photo Picker
+            </div>
+          )}
+          {showUploadImg.isVisible && (
+            <div
+              className="position-absolute rounded p-3 bg-white shadow-sm user-select-none text-center"
+              style={{
+                left: showUploadImg.position.x,
+                top: showUploadImg.position.y,
+                width: "140px",
+              }}
+              // onClick={handleClick}
+            >
+              Upload Photo
+            </div>
+          )}
         </div>
       </div>
     </div>
